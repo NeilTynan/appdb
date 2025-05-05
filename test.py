@@ -41,7 +41,8 @@ def view_directors():
     director = f"%{name}%"  
     cursor = conn.cursor()
     cursor.execute(query, (director,))
-        
+    
+    # Referenced ChatGPT - "How to clean up the results from this data query"
     print(f"\n{'Director':<30} {'Film':<40} {'Studio':<30}")
     print("="*100)
         
@@ -105,11 +106,25 @@ def add_actor():
     if not conn:
         connect()
     
-    Actor_ID = input("Actor ID: ").strip()        
+    cursor = conn.cursor()
+    
+    while True:
+        Actor_ID = input("Actor ID: ").strip()
+        cursor.execute("SELECT COUNT(*) as count from actor where ActorID = %s", (Actor_ID,))
+        if cursor.fetchone()['count'] > 0:
+            print("*** Error *** Actor ID already exists.")
+        else:
+            break
     Name = input("Name: ").strip()
     DOB = input("DOB: ").strip()
     Gender = input("Gender: ").strip()
-    Country_ID = input ("Country ID: ").strip()
+    while True:
+        Country_ID = input("Country ID: ").strip()
+        cursor.execute("SELECT COUNT(*) as count from country where CountryID = %s", (Country_ID,))
+        if cursor.fetchone()['count'] == 0:
+            print("*** Error *** Country ID does not exist.")
+        else:
+            break
 
     query = "insert into actor (ActorID, ActorName, ActorDOB, ActorGender, ActorCountryID) values (%s, %s, %s, %s, %s)"
     val = (Actor_ID, Name, DOB, Gender, Country_ID)
@@ -169,6 +184,10 @@ def main():
             actors_dob()
         elif choice == "3":
             add_actor()
+        elif choice == "4":
+            married_actor()
+        elif choice == "5":
+            add_marriage()
         elif choice == "6":
             view_studio()
         elif choice == "7":
